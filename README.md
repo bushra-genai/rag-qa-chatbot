@@ -1,6 +1,6 @@
-# 📚 RAG AI Assistant
+# 📚 RAG Q/A Chatbot
 
-This project is a **Retrieval-Augmented Generation (RAG) AI Assistant** built with **Streamlit** and **LLM integration**.
+This project is a **Retrieval-Augmented Generation (RAG) Q/A Chatbot** built with **Streamlit** and **LLM integration**.
 
 ## 🚀 Features
 - Upload and process knowledge-base files
