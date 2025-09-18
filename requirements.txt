@@ -21,6 +21,7 @@ pypdf
 # Embeddings
 sentence-transformers
 huggingface-hub
+torch==2.1.2
 
 # Numerical backend
 numpy
