@@ -2,12 +2,11 @@
 streamlit
 python-dotenv
 
-# LangChain stack (0.3 line)
-langchain
-langchain-core
-langchain-community
+# LangChain stack (unified)
+langchain==0.3.2
+langchain-core==0.3.9
+langchain-community==0.3.1
 langchain-groq
-langchain-huggingface
 langchain-chroma
 langchain-text-splitters
 pydantic
@@ -21,7 +20,7 @@ pypdf
 # Embeddings
 sentence-transformers
 huggingface-hub
-torch==2.1.2
+torch  # don't pin version — Cloud will auto-pick compatible one
 
 # Numerical backend
 numpy
