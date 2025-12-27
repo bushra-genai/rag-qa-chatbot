@@ -1,6 +1,8 @@
 # Core
 streamlit
 python-dotenv
+reportlab
+
 
 # LangChain stack (unified)
 langchain==0.3.2
