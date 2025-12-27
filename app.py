@@ -124,12 +124,22 @@ if retriever:
 
     # Chat input
     user_input = st.chat_input("💬 Ask a question about the selected PDF...")
-    if user_input:
-        with st.spinner("🤔 Thinking..."):
-            result = rag_chain.invoke({
-                "input": user_input,
-                "chat_history": st.session_state.chat_history[selected_pdf]
-            })
+
+if user_input:
+    with st.spinner("🤔 Thinking..."):
+
+        history = st.session_state.chat_history.get(selected_pdf, [])
+
+        chat_history = []
+        for q, a in history:
+            chat_history.append(HumanMessage(content=q))
+            chat_history.append(AIMessage(content=a))
+
+        result = rag_chain.invoke({
+            "input": user_input,
+            "chat_history": chat_history
+        })
+
         # Save chat history
         st.session_state.chat_history[selected_pdf].append(("user", user_input))
         st.session_state.chat_history[selected_pdf].append(("assistant", result["answer"]))
@@ -183,5 +193,6 @@ else:
         file_name="empty_chat_history.pdf",
         mime="application/pdf"
     )
+
 
 
