@@ -124,15 +124,16 @@ if retriever:
 
     # Chat input
     user_input = st.chat_input("💬 Ask a question about the selected PDF...")
-    if user_input:
+
+    if user_input is not None and user_input != "":
         with st.spinner("🤔 Thinking..."):
             result = rag_chain.invoke({
                 "input": user_input,
                 "chat_history": st.session_state.chat_history[selected_pdf]
-            })
-        # Save chat history
-        st.session_state.chat_history[selected_pdf].append(("user", user_input))
-        st.session_state.chat_history[selected_pdf].append(("assistant", result["answer"]))
+                })
+    # Save chat history
+    st.session_state.chat_history[selected_pdf].append(("user", user_input))
+    st.session_state.chat_history[selected_pdf].append(("assistant", result["answer"]))
 
     # Display chat in bubbles
     for role, msg in st.session_state.chat_history[selected_pdf]:
