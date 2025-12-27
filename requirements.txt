@@ -10,6 +10,7 @@ langchain-groq
 langchain-chroma
 langchain-text-splitters
 pydantic
+langchain-huggingface
 
 # Vector store
 chromadb
