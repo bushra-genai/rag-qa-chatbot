@@ -12,6 +12,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores import Chroma
 from langchain_community.document_loaders import PyPDFLoader
+from langchain_core.messages import HumanMessage, AIMessage
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import io
@@ -83,14 +84,35 @@ if splits:
 else:
     retriever = None
 
-# Setup history-aware retriever and QA chain
+# Initialize chat history globally
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = {}
+
+# Default PDF selection
+pdf_names = [pdf.name for pdf in uploaded_files] if uploaded_files else []
+selected_pdf = st.selectbox("Select PDF to chat with:", pdf_names) if pdf_names else "default"
+if selected_pdf not in st.session_state.chat_history:
+    st.session_state.chat_history[selected_pdf] = []
+
+# --- Sidebar Clear Chat Button ---
+if st.sidebar.button("🗑️ Clear Chat History"):
+    st.session_state.chat_history[selected_pdf] = []
+    st.sidebar.success(f"Chat history for '{selected_pdf}' cleared!")
+
+# --- Developed by Bushra line ---
+st.sidebar.markdown("---")
+st.sidebar.markdown("👩‍💻 **Developed by Bushra**")
+
+# Initialize user_input
+user_input = None
+
 if retriever:
+    # Setup history-aware retriever and QA chain
     contextualize_q_prompt = ChatPromptTemplate.from_messages([
         ("system", "Given the chat history and the latest user question, decide what to return."),
         MessagesPlaceholder("chat_history"),
         ("human", "{input}")
     ])
-
     history_aware_retriever = create_history_aware_retriever(llm, retriever, contextualize_q_prompt)
 
     qa_prompt = ChatPromptTemplate.from_messages([
@@ -99,74 +121,54 @@ if retriever:
          "If you don't know, say no. Keep it under three sentences.\n\nContext:\n{context}"),
         ("human", "{input}")
     ])
-
     qa_chain = create_stuff_documents_chain(llm, qa_prompt)
     rag_chain = create_retrieval_chain(history_aware_retriever, qa_chain)
-
-    # Initialize chat history per PDF
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = {}
-
-    # Select PDF to chat about
-    pdf_names = [pdf.name for pdf in uploaded_files] if uploaded_files else []
-    selected_pdf = st.selectbox("Select PDF to chat with:", pdf_names) if pdf_names else "default"
-    if selected_pdf not in st.session_state.chat_history:
-        st.session_state.chat_history[selected_pdf] = []
-
-    # --- Sidebar Clear Chat Button ---
-    if st.sidebar.button("🗑️ Clear Chat History"):
-        st.session_state.chat_history[selected_pdf] = []
-        st.sidebar.success(f"Chat history for '{selected_pdf}' cleared!")
-
-    # --- Developed by Bushra line ---
-    st.sidebar.markdown("---")  # optional separator
-    st.sidebar.markdown("👩‍💻 **Developed by Bushra**")
 
     # Chat input
     user_input = st.chat_input("💬 Ask a question about the selected PDF...")
 
+# --- Main chat processing ---
 if user_input:
     with st.spinner("🤔 Thinking..."):
 
+        # Format chat history for LangChain
         history = st.session_state.chat_history.get(selected_pdf, [])
-
         chat_history = []
         for q, a in history:
             chat_history.append(HumanMessage(content=q))
             chat_history.append(AIMessage(content=a))
 
+        # Invoke RAG chain
         result = rag_chain.invoke({
             "input": user_input,
             "chat_history": chat_history
         })
 
-        # Save chat history
-        st.session_state.chat_history[selected_pdf].append(
-    (user_input, result["answer"])
-)
+        # Save Q/A pair in chat history
+        st.session_state.chat_history[selected_pdf].append((user_input, result["answer"]))
 
-
-    # Display chat in bubbles
-    for role, msg in st.session_state.chat_history[selected_pdf]:
-        if role == "user":
-            with st.chat_message("user"):
-                st.markdown(msg)
-        else:
-            with st.chat_message("assistant"):
-                st.markdown(msg)
+    # Display chat bubbles
+    for q, a in st.session_state.chat_history[selected_pdf]:
+        with st.chat_message("user"):
+            st.markdown(q)
+        with st.chat_message("assistant"):
+            st.markdown(a)
 
     # --- Download Chat History as PDF ---
-    chat_history = st.session_state.chat_history.get(selected_pdf, [])
+    chat_history_pdf = st.session_state.chat_history.get(selected_pdf, [])
     pdf_buffer = io.BytesIO()
     c = canvas.Canvas(pdf_buffer, pagesize=letter)
     width, height = letter
 
     y = height - 50
-    for role, msg in chat_history:
-        text = f"{role.upper()}: {msg}"
+    for q, a in chat_history_pdf:
+        text = f"USER: {q}"
         c.drawString(50, y, text)
         y -= 20
-        if y < 50:  # next page if space khatam ho jaye
+        text = f"ASSISTANT: {a}"
+        c.drawString(50, y, text)
+        y -= 30
+        if y < 50:
             c.showPage()
             y = height - 50
     c.save()
@@ -182,7 +184,7 @@ if user_input:
 else:
     st.info("📌 Please upload PDF files to start.")
 
-    # --- Still show empty PDF download button ---
+    # Empty PDF for no chat
     empty_pdf = io.BytesIO()
     c = canvas.Canvas(empty_pdf, pagesize=letter)
     c.drawString(50, 750, "No chat history available.")
@@ -195,7 +197,3 @@ else:
         file_name="empty_chat_history.pdf",
         mime="application/pdf"
     )
-
-
-
-
