@@ -44,7 +44,7 @@ if not api_key:
 
 # Initialize embeddings and LLM
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-llm = ChatGroq(groq_api_key=api_key, model_name="gemma2-9b-it")
+llm = ChatGroq(groq_api_key=api_key, model_name="llama3-8b-8192")
 
 # File uploader
 uploaded_files = st.file_uploader(
@@ -183,4 +183,5 @@ else:
         file_name="empty_chat_history.pdf",
         mime="application/pdf"
     )
+
 
