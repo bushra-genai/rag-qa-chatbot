@@ -141,8 +141,10 @@ if user_input:
         })
 
         # Save chat history
-        st.session_state.chat_history[selected_pdf].append(("user", user_input))
-        st.session_state.chat_history[selected_pdf].append(("assistant", result["answer"]))
+        st.session_state.chat_history[selected_pdf].append(
+    (user_input, result["answer"])
+)
+
 
     # Display chat in bubbles
     for role, msg in st.session_state.chat_history[selected_pdf]:
@@ -193,6 +195,7 @@ else:
         file_name="empty_chat_history.pdf",
         mime="application/pdf"
     )
+
 
 
 
