@@ -103,7 +103,7 @@ if st.sidebar.button("🗑️ Clear Chat History"):
 st.sidebar.markdown("---")
 st.sidebar.markdown("👩‍💻 **Developed by Bushra**")
 
-# Initialize user_input
+# Initialize user_input globally to avoid NameError
 user_input = None
 
 if retriever:
@@ -128,7 +128,7 @@ if retriever:
     user_input = st.chat_input("💬 Ask a question about the selected PDF...")
 
 # --- Main chat processing ---
-if user_input:
+if user_input is not None and user_input != "":
     with st.spinner("🤔 Thinking..."):
 
         # Format chat history for LangChain
