@@ -183,3 +183,4 @@ else:
         file_name="empty_chat_history.pdf",
         mime="application/pdf"
     )
+
